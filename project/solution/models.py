@@ -26,6 +26,7 @@ class SimpleNet(nn.Module):
             first_conv_features)))
         third_conv_features = self.pool(F.relu(self.conv3(
             second_conv_features)))
+        
         # flatten all dimensions except batch
         flattened_features = torch.flatten(third_conv_features, 1)
         fully_connected_first_out = F.relu(self.fc1(flattened_features))

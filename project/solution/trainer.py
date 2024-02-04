@@ -12,6 +12,27 @@ from common import OUTPUT_DIR, CHECKPOINT_DIR
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+def calculate_accuracy(preds, target):
+
+    # Check if preds and target are 1-dimensional tensors
+    if len(preds.shape) == len(target.shape) == 1:
+        _, predicted = torch.max(preds, dim=0)
+        # Compare the single predicted class with the single target class
+        accuracy = int(predicted == target)
+    else:
+        
+        # Get the predicted class index for each sample
+        _, predicted = torch.max(preds, dim=1)
+        _, target = torch.max(target, dim=1)
+        
+        # Compare the predicted class with the target class and calculate the number of correct predictions
+        correct = (predicted == target).sum().item()
+        
+        # Calculate the accuracy
+        accuracy = correct / len(target)
+
+    return accuracy
+
 
 @dataclass
 class LoggingParameters:
@@ -25,13 +46,13 @@ class LoggingParameters:
 class Trainer:
     """Abstract model trainer on a binary classification task."""
     def __init__(self,
-                 model: nn.Module,
-                 optimizer: torch.optim,
-                 criterion,
-                 batch_size: int,
-                 train_dataset: Dataset,
-                 validation_dataset: Dataset,
-                 test_dataset: Dataset):
+                model: nn.Module,
+                optimizer: torch.optim,
+                criterion,
+                batch_size: int,
+                train_dataset: Dataset,
+                validation_dataset: Dataset,
+                test_dataset: Dataset):
         self.model = model.to(device)
         self.optimizer = optimizer
         self.criterion = criterion
@@ -47,6 +68,7 @@ class Trainer:
             (avg_loss, accuracy): tuple containing the average loss and
             accuracy across all dataset samples.
         """
+        print("--- Train ---")
         self.model.train()
         total_loss = 0
         avg_loss = 0
@@ -55,17 +77,47 @@ class Trainer:
         correct_labeled_samples = 0
 
         train_dataloader = DataLoader(self.train_dataset,
-                                      self.batch_size,
-                                      shuffle=True)
+                                    self.batch_size,
+                                    shuffle=True)
         print_every = int(len(train_dataloader) / 10)
 
         for batch_idx, (inputs, targets) in enumerate(train_dataloader):
             """INSERT YOUR CODE HERE."""
+            
+            # compute number of samples
+            nof_samples += len(targets)
+            
+            # set to gpu if available
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            
+            # get the model out
+            model_output = self.model(inputs)
+            # compute the loss
+            loss = self.criterion(model_output,targets)
+            # calculate the total loss and avg loss
+            total_loss += loss.item()
+            avg_loss = total_loss / nof_samples
+            
+            
+            # Compare the predicted class with the target class and calculate the number of correct predictions
+            _, model_preds = torch.max(model_output,dim=1)
+            correct_labeled_samples += (model_preds == targets).sum().item()
+            # Calculate the accuracy of the model's predictions
+            accuracy = correct_labeled_samples / nof_samples
+            
+            # Zero out the gradients in the optimizer
+            self.optimizer.zero_grad()
+            # Compute the gradients of the loss with respect to the model's parameters
+            loss.backward()
+            # Use the optimizer to update the model's parameters based on the computed gradients
+            self.optimizer.step()
+            
             if batch_idx % print_every == 0 or \
                     batch_idx == len(train_dataloader) - 1:
                 print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
-                      f'Acc: {accuracy:.2f}[%] '
-                      f'({correct_labeled_samples}/{nof_samples})')
+                    f'Acc: {accuracy:.2f}[%] '
+                    f'({correct_labeled_samples}/{nof_samples})')
 
         return avg_loss, accuracy
 
@@ -80,6 +132,7 @@ class Trainer:
             (avg_loss, accuracy): tuple containing the average loss and
             accuracy across all dataset samples.
         """
+        print("--- Eval Valid/Test ---")
         self.model.eval()
         dataloader = DataLoader(dataset,
                                 batch_size=self.batch_size,
@@ -93,10 +146,32 @@ class Trainer:
 
         for batch_idx, (inputs, targets) in enumerate(dataloader):
             """INSERT YOUR CODE HERE."""
+            
+            # compute number of samples
+            nof_samples += len(targets)
+            
+            # set to gpu if available
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            
+            # get the model out
+            model_output = self.model(inputs)
+            # compute the loss
+            loss = self.criterion(model_output,targets)
+            # calculate the total loss and avg loss
+            total_loss += loss.item()
+            avg_loss = total_loss / nof_samples
+            
+            # Compare the predicted class with the target class and calculate the number of correct predictions
+            _, model_preds = torch.max(model_output,dim=1)
+            correct_labeled_samples += (model_preds == targets).sum().item()
+            # Calculate the accuracy of the model's predictions
+            accuracy = correct_labeled_samples / nof_samples
+            
             if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
                 print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
-                      f'Acc: {accuracy:.2f}[%] '
-                      f'({correct_labeled_samples}/{nof_samples})')
+                    f'Acc: {accuracy:.2f}[%] '
+                    f'({correct_labeled_samples}/{nof_samples})')
 
         return avg_loss, accuracy
 
@@ -163,6 +238,7 @@ class Trainer:
         for self.epoch in range(1, epochs + 1):
             print(f'Epoch {self.epoch}/{epochs}')
 
+            
             train_loss, train_acc = self.train_one_epoch()
             val_loss, val_acc = self.validate()
             test_loss, test_acc = self.test()

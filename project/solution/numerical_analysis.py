@@ -58,7 +58,34 @@ def get_soft_scores_and_true_labels(dataset, model):
         gt_labels: an iterable holding the samples' ground truth labels.
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    return torch.rand(100, ), torch.rand(100, ), torch.randint(0, 2, (100, ))
+    all_first_soft_scores = []
+    all_second_soft_scores = []
+    gt_labels = []
+
+    for data, label in dataset:
+        # Assuming the dataset returns a batch of data and labels
+        # Model's output is expected to be a tensor of shape [batch_size, num_classes]
+        output = model(data)
+
+        # Extracting soft scores for the first and second classes
+        first_soft_scores = output[:, 0]
+        second_soft_scores = output[:, 1]
+
+        # Append the soft scores and labels to the respective lists
+        all_first_soft_scores.append(first_soft_scores)
+        all_second_soft_scores.append(second_soft_scores)
+        gt_labels.append(label)
+
+    # Converting lists of tensors to single tensors
+    all_first_soft_scores = torch.cat(all_first_soft_scores, dim=0)
+    all_second_soft_scores = torch.cat(all_second_soft_scores, dim=0)
+    gt_labels = torch.cat(gt_labels, dim=0)
+
+    return all_first_soft_scores, all_second_soft_scores, gt_labels
+
+# Note: This function is designed assuming that the dataset yields batches of data and labels, 
+# and that the model outputs a tensor where each row corresponds to a data point and each column 
+# to a class. The dataset and model should be compatible with this design for the function to work correctly.
 
 
 def plot_roc_curve(roc_curve_figure,

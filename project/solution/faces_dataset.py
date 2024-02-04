@@ -5,7 +5,6 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset
 
-
 class FacesDataset(Dataset):
     """Faces dataset.
 
