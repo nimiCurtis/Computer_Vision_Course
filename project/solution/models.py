@@ -43,4 +43,18 @@ def get_xception_based_model() -> nn.Module:
     classification head stated in the exercise.
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    return SimpleNet()
+    mlp = nn.Sequential(
+    # Fully-Connected 2048x1000 → ReLu → Fully-Connected 1000x256 → ReLU
+    # → Fully-Connected 256x64 → ReLU → Fully-Connected 64x2
+        nn.Linear(2048, 1000),
+        nn.ReLU(inplace=True),
+        nn.Linear(1000, 256),
+        nn.ReLU(inplace=True),
+        nn.Linear(256, 64),
+        nn.ReLU(inplace=True),
+        nn.Linear(64, 2),
+    )
+    
+    xception = build_xception_backbone(pretrained=True)
+    xception.fc = mlp
+    return xception

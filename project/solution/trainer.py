@@ -133,6 +133,8 @@ class Trainer:
             accuracy across all dataset samples.
         """
         print("--- Eval Valid/Test ---")
+        torch.cuda.empty_cache()
+
         self.model.eval()
         dataloader = DataLoader(dataset,
                                 batch_size=self.batch_size,

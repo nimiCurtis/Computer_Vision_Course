@@ -1,6 +1,8 @@
 """Main training script."""
 import argparse
 
+import torch
+torch.cuda.empty_cache()
 from torch import nn
 from torch import optim
 

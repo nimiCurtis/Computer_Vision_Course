@@ -62,5 +62,51 @@
             0.499546690843155,
             0.5004533091568449
         ]
+    },
+    {
+        "model": "SimpleNet",
+        "dataset": "synthetic_dataset",
+        "optimizer": {
+            "name": "Adam",
+            "params": {
+                "lr": 0.001,
+                "betas": [
+                    0.9,
+                    0.999
+                ],
+                "eps": 1e-08,
+                "weight_decay": 0,
+                "amsgrad": false,
+                "maximize": false,
+                "foreach": null,
+                "capturable": false,
+                "differentiable": false,
+                "fused": null
+            }
+        },
+        "train_loss": [
+            0.021903986941448038,
+            0.02172537141373267
+        ],
+        "train_acc": [
+            0.49692991742536524,
+            0.4928011856870633
+        ],
+        "val_loss": [
+            0.021904400889431686,
+            0.021903147919375504
+        ],
+        "val_acc": [
+            0.5004269854824936,
+            0.5004269854824936
+        ],
+        "test_loss": [
+            0.02199909655699812,
+            0.02199698969762323
+        ],
+        "test_acc": [
+            0.499546690843155,
+            0.499546690843155
+        ]
     }
 ]

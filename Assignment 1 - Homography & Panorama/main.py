@@ -2,7 +2,7 @@ import time
 import scipy.io
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-
+import numpy as np
 from cv2 import resize, INTER_CUBIC
 from matplotlib.patches import Circle
 
@@ -64,7 +64,7 @@ def main():
     plt.figure()
     forward_panorama_slow_plot = plt.imshow(transformed_image)
     plt.title('Forward Homography Slow implementation')
-    plt.show()
+    # plt.show()
 
     # Plot naive homography with forward mapping, fast implementation
     tt = time.time()
@@ -122,6 +122,17 @@ def main():
     print('RANSAC Homography {:5.4f} sec'.format(toc(tt)))
     print(ransac_homography)
 
+    # Plot RANSAC homography with forward mapping, fast implementation for
+    # imperfect matches
+    ransac_transformed_image_fast = solution.compute_forward_homography_fast(
+        homography=ransac_homography,
+        src_image=src_img,
+        dst_image_shape=dst_img.shape)
+    plt.figure()
+    ransac_forward_panorama_imperfect_matches_plot = plt.imshow(ransac_transformed_image_fast)
+    plt.title('Forward RANSAC imperfect matches')
+    # plt.show()
+
     # Test RANSAC homography
     tt = tic()
     fit_percent, dist_mse = solution.test_homography(ransac_homography,
@@ -131,6 +142,17 @@ def main():
     print('RANSAC Homography Test {:5.4f} sec'.format(toc(tt)))
     print([fit_percent, dist_mse])
 
+    # Plot RANSAC homography with forward mapping, fast implementation for
+    # imperfect matches
+    ransac_back_homography = np.linalg.inv(ransac_homography)
+    back_ransac_transformed_image_fast = solution.compute_backward_mapping(
+        backward_projective_homography=ransac_back_homography,
+        src_image=src_img,
+        dst_image_shape=dst_img.shape)
+    plt.figure()
+    ransac_backward_panorama_imperfect_matches_plot = plt.imshow(back_ransac_transformed_image_fast)
+    plt.title('Backward RANSAC imperfect matches')
+    
     # Build panorama
     tt = tic()
     img_pan = solution.panorama(src_img,
@@ -147,7 +169,6 @@ def main():
     plt.title('Great Panorama')
     # plt.show()
     plt.show()
-
 
 def your_images_loader():
     src_img_test = mpimg.imread('src_test.jpg')
@@ -183,8 +204,8 @@ def your_images_main():
 
     src_img_test, dst_img_test, match_p_src, match_p_dst = your_images_loader()
     homography = solution.compute_homography(match_p_src, match_p_dst,
-                                             inliers_percent,
-                                             max_err=25)
+                                            inliers_percent,
+                                            max_err=max_err)
     img = solution.compute_forward_homography_fast(
         homography=homography,
         src_image=src_img_test,
@@ -197,7 +218,7 @@ def your_images_main():
 
     backward_homography = solution.compute_homography(match_p_dst, match_p_src,
                                                       inliers_percent,
-                                                      max_err=25)
+                                                      max_err=max_err)
     img = solution.compute_backward_mapping(
         backward_projective_homography=backward_homography,
                                       src_image=src_img_test,
