@@ -498,17 +498,17 @@ class Solution:
         # return final_homography
         """INSERT YOUR CODE HERE"""
         # (1) Build the translation matrix from the pads
-        translation_matrix = np.array([[1, 0, pad_left],
-                                    [0, 1, pad_up],
+        translation_matrix = np.array([[1, 0, -pad_left],
+                                    [0, 1, -pad_up],
                                     [0, 0, 1]])
 
         # (2) Compose the backward homography and the translation matrix together
-        homography_translated = translation_matrix @ backward_homography
+        final_homography =  backward_homography @  translation_matrix
 
         # (3) Assuming scaling is required to normalize the homography matrix
-        homography_translated /= homography_translated[2, 2]
+        final_homography /= final_homography[2, 2]
 
-        return homography_translated
+        return final_homography
 
     def panorama(self,
                 src_image: np.ndarray,
@@ -555,42 +555,18 @@ class Solution:
         # (1) Compute the forward homography using matched points (potentially with RANSAC)
         # This would typically involve a function call to a homography computation method
         forward_homography = self.compute_homography(match_p_src, match_p_dst, inliers_percent, max_err)         # panorama_shape = determine_panorama_shape(src_image, dst_image, forward_homography)
-        backward_homography = np.linalg.inv(forward_homography)
         panorama_shape = self.find_panorama_shape(src_image=src_image,dst_image=dst_image,homography=forward_homography)
         pad_struct = panorama_shape[2]
-        translation_adjusted_homography = self.add_translation_to_backward_homography(backward_homography, pad_struct.pad_left, pad_struct.pad_up)
-        warped_src_image = self.compute_backward_mapping(translation_adjusted_homography,src_image,(panorama_shape[0],panorama_shape[1]))
-        # img_panorama = create_panorama_image(dst_image, warped_src_image)
-        img_panorama = np.zeros((panorama_shape[0],panorama_shape[1],3))
-        img_panorama[:dst_image.shape[0],:dst_image.shape[1]] = dst_image
-        img_panorama[pad_struct.pad_up:pad_struct.pad_up+warped_src_image.shape[0],pad_struct.pad_left:pad_struct.pad_left+warped_src_image.shape[1]] = warped_src_image        
-        img_panorama = np.clip(img_panorama, 0, 255).astype(np.uint8)
-        import matplotlib.pyplot as plt
-        plt.figure()
-        panorama = plt.imshow(img_panorama)
+        panorama_shape = (panorama_shape[0],panorama_shape[1],3)
+
+        backward_homography = np.linalg.inv(forward_homography)
+        translation_adjusted_homography = self.add_translation_to_backward_homography(backward_homography,
+                                                                                    pad_struct.pad_left,
+                                                                                    pad_struct.pad_up)
+        # create panorama image
+        img_panorama = self.compute_backward_mapping(translation_adjusted_homography,src_image,panorama_shape)
+        img_panorama[pad_struct.pad_up:pad_struct.pad_up+dst_image.shape[0],
+                    pad_struct.pad_left:pad_struct.pad_left+dst_image.shape[1]] = dst_image        
+
         return np.clip(img_panorama, 0, 255).astype(np.uint8)
 
-        
-        
-        # (2) Compute the backward homography, which is the inverse of the forward homography
-        backward_homography = np.linalg.inv(forward_homography)
-        
-        # (3) Add translation to the backward homography to ensure correct placement in the panorama
-        # Assuming functions to compute the required translation based on the image overlap or desired positioning
-        pad_left, pad_up = compute_translation_parameters(src_image, dst_image, backward_homography)
-        backward_homography_with_translation = add_translation_to_backward_homography(backward_homography, pad_left, pad_up)
-        
-        # (4) Compute the backward warping of the source image using the modified homography
-        warped_src_image = warp_image(src_image, backward_homography_with_translation, output_shape)
-        
-        # (5) Create an empty panorama image and plant the destination image
-        img_panorama = np.zeros_like(panorama_shape)  # Define panorama_shape based on both images
-        img_panorama[...] = place_destination_image(dst_image, img_panorama)
-        
-        # (6) Place the backward warped source image in the indices where the panorama image is zero
-        img_panorama = merge_images(warped_src_image, img_panorama)
-        
-        # (7) Clip the values of the image to [0, 255]
-        img_panorama_clipped = np.clip(img_panorama, 0, 255).astype(np.uint8)
-        
-        return img_panorama_clipped
