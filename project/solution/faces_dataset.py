@@ -4,7 +4,7 @@ import os
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-
+from typing import Tuple ## change
 class FacesDataset(Dataset):
     """Faces dataset.
 
@@ -27,7 +27,7 @@ class FacesDataset(Dataset):
 
         self.transform = transform
 
-    def __getitem__(self, index) -> tuple[torch.Tensor, int]:
+    def __getitem__(self, index) -> Tuple[torch.Tensor, int]: # tuple[torch.Tensor, int]
         """Get a sample and label from the dataset."""
         """INSERT YOUR CODE HERE, overrun return."""
         

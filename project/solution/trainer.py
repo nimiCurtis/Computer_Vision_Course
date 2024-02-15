@@ -8,6 +8,7 @@ from torch import nn
 from torch.utils.data import Dataset, DataLoader
 
 from common import OUTPUT_DIR, CHECKPOINT_DIR
+from typing import Tuple ## change
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -62,7 +63,7 @@ class Trainer:
         self.test_dataset = test_dataset
         self.epoch = 0
 
-    def train_one_epoch(self) -> tuple[float, float]:
+    def train_one_epoch(self) -> Tuple[float, float]: #tuple[torch.Tensor, int]
         """Train the model for a single epoch on the training dataset.
         Returns:
             (avg_loss, accuracy): tuple containing the average loss and
@@ -80,7 +81,6 @@ class Trainer:
                                     self.batch_size,
                                     shuffle=True)
         print_every = int(len(train_dataloader) / 10)
-
         for batch_idx, (inputs, targets) in enumerate(train_dataloader):
             """INSERT YOUR CODE HERE."""
             
@@ -122,7 +122,7 @@ class Trainer:
         return avg_loss, accuracy
 
     def evaluate_model_on_dataloader(
-            self, dataset: torch.utils.data.Dataset) -> tuple[float, float]:
+            self, dataset: torch.utils.data.Dataset) -> Tuple[float, float]: #tuple[torch.Tensor, int]
         """Evaluate model loss and accuracy for dataset.
 
         Args:
@@ -133,7 +133,7 @@ class Trainer:
             accuracy across all dataset samples.
         """
         print("--- Eval Valid/Test ---")
-        torch.cuda.empty_cache()
+        
 
         self.model.eval()
         dataloader = DataLoader(dataset,
@@ -145,44 +145,47 @@ class Trainer:
         nof_samples = 0
         correct_labeled_samples = 0
         print_every = max(int(len(dataloader) / 10), 1)
+        with torch.no_grad():
 
-        for batch_idx, (inputs, targets) in enumerate(dataloader):
-            """INSERT YOUR CODE HERE."""
-            
-            # compute number of samples
-            nof_samples += len(targets)
-            
-            # set to gpu if available
-            inputs = inputs.to(device)
-            targets = targets.to(device)
-            
-            # get the model out
-            model_output = self.model(inputs)
-            # compute the loss
-            loss = self.criterion(model_output,targets)
-            # calculate the total loss and avg loss
-            total_loss += loss.item()
-            avg_loss = total_loss / nof_samples
-            
-            # Compare the predicted class with the target class and calculate the number of correct predictions
-            _, model_preds = torch.max(model_output,dim=1)
-            correct_labeled_samples += (model_preds == targets).sum().item()
-            # Calculate the accuracy of the model's predictions
-            accuracy = correct_labeled_samples / nof_samples
-            
-            if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
-                print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
-                    f'Acc: {accuracy:.2f}[%] '
-                    f'({correct_labeled_samples}/{nof_samples})')
+            for batch_idx, (inputs, targets) in enumerate(dataloader):
+                """INSERT YOUR CODE HERE."""
+                
+                # compute number of samples
+                nof_samples += len(targets)
+                
+                # set to gpu if available
+                inputs = inputs.to(device)
+                targets = targets.to(device)
+                
+                # get the model out
+                model_output = self.model(inputs)
+                # compute the loss
+                loss = self.criterion(model_output,targets)
+                # calculate the total loss and avg loss
+                total_loss += loss.item()
+                avg_loss = total_loss / nof_samples
+                
+                # Compare the predicted class with the target class and calculate the number of correct predictions
+                _, model_preds = torch.max(model_output,dim=1)
+                correct_labeled_samples += (model_preds == targets).sum().item()
+                # Calculate the accuracy of the model's predictions
+                accuracy = correct_labeled_samples / nof_samples
+                
+                if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
+                    print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '
+                        f'Acc: {accuracy:.2f}[%] '
+                        f'({correct_labeled_samples}/{nof_samples})')
 
         return avg_loss, accuracy
 
     def validate(self):
         """Evaluate the model performance."""
+        torch.cuda.empty_cache()
         return self.evaluate_model_on_dataloader(self.validation_dataset)
 
     def test(self):
         """Test the model performance."""
+        torch.cuda.empty_cache()
         return self.evaluate_model_on_dataloader(self.test_dataset)
 
     @staticmethod
