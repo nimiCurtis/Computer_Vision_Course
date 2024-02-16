@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 
 from torch.utils.data import DataLoader
 
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.image import show_cam_on_image
+from torchvision.transforms.functional import to_pil_image, to_tensor
+
 from common import FIGURES_DIR
 from utils import load_dataset, load_model
 
@@ -52,7 +56,41 @@ def get_grad_cam_visualization(test_dataset: torch.utils.data.Dataset,
         of batch size 1, it's a tensor of shape (1,)).
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    return np.random.rand(256, 256, 3), torch.randint(0, 2, (1,))
+    # Assuming the model's last convolutional layer is named 'layer4' as in ResNet
+    # You might need to adjust this based on your model's architecture
+    target_layer = model.conv3
+
+    # Wrap the model with GradCAM
+    cam = GradCAM(model=model, target_layers=[target_layer])
+
+    # Create a DataLoader for the test dataset
+    # We'll just take one sample from the dataset
+    data_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
+    sample, true_label = next(iter(data_loader))
+
+    # If CUDA is available, move the sample to GPU
+    if torch.cuda.is_available():
+        sample = sample.cuda()
+
+    # Generate the CAM mask
+    grayscale_cam = cam(input_tensor=sample, targets=None, eigen_smooth=True)
+
+    # The 'grayscale_cam' will have a shape of (batch_size, height, width)
+    # Since we are working with a batch size of 1, we'll take the first item
+    grayscale_cam = grayscale_cam[0, :]
+
+    # Convert the sample (image tensor) to a NumPy array for visualization
+    # You may need to normalize the image if it's not in 0-1 range
+    image_for_visualization = sample.cpu().squeeze().numpy().transpose(1, 2, 0)
+    image_for_visualization = (image_for_visualization - image_for_visualization.min()) / \
+                              (image_for_visualization.max() - image_for_visualization.min())
+
+    # Apply the CAM mask on the image
+    visualization = show_cam_on_image(image_for_visualization, grayscale_cam, use_rgb=True)
+
+    # Return the visualization and the true label
+    # Convert true_label to CPU if it was moved to GPU
+    return visualization, true_label.cpu() 
 
 
 def main():
