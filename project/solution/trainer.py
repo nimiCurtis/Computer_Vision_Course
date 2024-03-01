@@ -161,6 +161,7 @@ class Trainer:
                 model_output = self.model(inputs)
                 # compute the loss
                 loss = self.criterion(model_output,targets)
+                
                 # calculate the total loss and avg loss
                 total_loss += loss.item()
                 avg_loss = total_loss / nof_samples

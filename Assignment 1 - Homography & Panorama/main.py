@@ -24,6 +24,7 @@ def toc(t):
     return float(tic()) - float(t)
 
 
+
 def load_data(is_perfect_matches=True):
     # Read the data:
     src_img = mpimg.imread('src.jpg')
@@ -46,6 +47,10 @@ def main():
     inliers_percent = 0.8
     # loading data with perfect matches
     src_img, dst_img, match_p_src, match_p_dst = load_data()
+    
+    # present the matching points
+    #solution.imshow_with_points(src_img, dst_img, match_p_src, match_p_dst)
+    
     # Compute naive homography
     tt = time.time()
     naive_homography = solution.compute_homography_naive(match_p_src,
@@ -81,7 +86,10 @@ def main():
 
     # loading data with imperfect matches
     src_img, dst_img, match_p_src, match_p_dst = load_data(False)
-
+    
+    # presenting imperfect matches
+    solution.imshow_with_points(src_img, dst_img, match_p_src, match_p_dst)
+    
     # Compute naive homography
     tt = time.time()
     naive_homography = solution.compute_homography_naive(match_p_src,
@@ -199,10 +207,14 @@ def your_images_main():
     # Student Files
     # first run "create_matching_points.py" with your own images to create a mat
     # file with the matching coordinates.
-    max_err = 25  # <<<<< YOU MAY CHANGE THIS
-    inliers_percent = 0.8  # <<<<< YOU MAY CHANGE THIS
+    max_err = 2  # <<<<< YOU MAY CHANGE THIS
+    inliers_percent = 0.5  # <<<<< YOU MAY CHANGE THIS
 
     src_img_test, dst_img_test, match_p_src, match_p_dst = your_images_loader()
+    
+    # show the matching points
+    #solution.imshow_with_points(src_img_test, dst_img_test, match_p_src, match_p_dst)
+    
     homography = solution.compute_homography(match_p_src, match_p_dst,
                                             inliers_percent,
                                             max_err=max_err)

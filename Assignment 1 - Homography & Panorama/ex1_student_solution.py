@@ -5,7 +5,7 @@ from typing import Tuple
 from random import sample
 from collections import namedtuple
 
-
+import matplotlib.pyplot as plt
 from numpy.linalg import svd
 from scipy.interpolate import griddata
 
@@ -18,7 +18,38 @@ class Solution:
     """Implement Projective Homography and Panorama Solution."""
     def __init__(self):
         pass
+    
+    
+    @staticmethod
+    def imshow_with_points(src_img, dst_img, match_p_src, match_p_dst):
+        """
+        Custom function, displays two images side by side with matching points overlaid.
+        
+        Parameters:
+        - src_img: The source image as a numpy array.
+        - dst_img: The destination image as a numpy array.
+        - match_p_src: A numpy array of matching points in the source image, where each row represents a point (x, y).
+        - match_p_dst: A numpy array of matching points in the destination image, similar to match_p_src.
+        
+        Returns:
+        None. This function directly displays the images using matplotlib's plotting capabilities.
+        """
+        
+        # Plotting the source image with its corresponding points
+        plt.figure(figsize=(10, 5))
+        plt.subplot(1, 2, 1)
+        plt.imshow(src_img)
+        plt.scatter(match_p_src[0], match_p_src[1], color='blue', s=10)  # s is the size of the point
+        plt.title('Source Image with Matching Points')
 
+        # Plotting the destination image with its corresponding points
+        plt.subplot(1, 2, 2)
+        plt.imshow(dst_img)
+        plt.scatter(match_p_dst[0], match_p_dst[1], color='red', s=10)
+        plt.title('Destination Image with Matching Points')
+
+        plt.show()
+    
     @staticmethod
     def compute_homography_naive(match_p_src: np.ndarray,
                                  match_p_dst: np.ndarray) -> np.ndarray:
