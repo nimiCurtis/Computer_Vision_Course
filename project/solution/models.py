@@ -6,7 +6,6 @@ from torch import nn
 
 from xcpetion import build_xception_backbone
 
-
 class SimpleNet(nn.Module):
     """Simple Convolutional and Fully Connect network."""
     def __init__(self):
@@ -26,7 +25,6 @@ class SimpleNet(nn.Module):
             first_conv_features)))
         third_conv_features = self.pool(F.relu(self.conv3(
             second_conv_features)))
-        
         # flatten all dimensions except batch
         flattened_features = torch.flatten(third_conv_features, 1)
         fully_connected_first_out = F.relu(self.fc1(flattened_features))
@@ -54,7 +52,7 @@ def get_xception_based_model() -> nn.Module:
         nn.ReLU(inplace=True),
         nn.Linear(64, 2),
     )
-    
+
     xception = build_xception_backbone(pretrained=True)
     xception.fc = mlp
     return xception

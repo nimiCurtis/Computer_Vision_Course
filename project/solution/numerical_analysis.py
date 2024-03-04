@@ -14,6 +14,7 @@ from utils import load_dataset, load_model
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+torch.cuda.empty_cache()
 
 
 # Arguments
@@ -25,10 +26,10 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='Analyze network performance.')
     parser.add_argument('--model', '-m',
-                        default='XceptionBased', type=str,
+                        default='SimpleNet', type=str,
                         help='Model name: SimpleNet or XceptionBased.')
     parser.add_argument('--checkpoint_path', '-cpp',
-                        default='checkpoints/XceptionBased.pt', type=str,
+                        default='checkpoints/fakes_dataset_SimpleNet_Adam.pt', type=str,
                         help='Path to model checkpoint.')
     parser.add_argument('--dataset', '-d',
                         default='fakes_dataset', type=str,
@@ -61,32 +62,40 @@ def get_soft_scores_and_true_labels(dataset, model):
     all_first_soft_scores = []
     all_second_soft_scores = []
     gt_labels = []
+    data_loader = DataLoader(dataset,batch_size=16)
+    # device = 'cpu'
+    
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(data_loader):
+            # Assuming the dataset returns a batch of data and labels
+            # Model's output is expected to be a tensor of shape [batch_size, num_classes]
 
-    for data, label in dataset:
-        # Assuming the dataset returns a batch of data and labels
-        # Model's output is expected to be a tensor of shape [batch_size, num_classes]
-        output = model(data)
+            # set to gpu if available
+            
+            inputs = inputs.to(device)
+            targets = targets.to(device)
+            
+            output = model(inputs)
 
-        # Extracting soft scores for the first and second classes
-        first_soft_scores = output[:, 0]
-        second_soft_scores = output[:, 1]
+            # Extracting soft scores for the first and second classes
+            first_soft_scores = output[:, 0]
+            second_soft_scores = output[:, 1]
 
-        # Append the soft scores and labels to the respective lists
-        all_first_soft_scores.append(first_soft_scores)
-        all_second_soft_scores.append(second_soft_scores)
-        gt_labels.append(label)
+            # Append the soft scores and labels to the respective lists
+            all_first_soft_scores.append(first_soft_scores)
+            all_second_soft_scores.append(second_soft_scores)
+            gt_labels.append(targets)
 
     # Converting lists of tensors to single tensors
     all_first_soft_scores = torch.cat(all_first_soft_scores, dim=0)
     all_second_soft_scores = torch.cat(all_second_soft_scores, dim=0)
     gt_labels = torch.cat(gt_labels, dim=0)
 
-    return all_first_soft_scores, all_second_soft_scores, gt_labels
+    return all_first_soft_scores.cpu().detach().numpy(), all_second_soft_scores.cpu().detach().numpy(), gt_labels.cpu().detach().numpy()
 
 # Note: This function is designed assuming that the dataset yields batches of data and labels, 
 # and that the model outputs a tensor where each row corresponds to a data point and each column 
 # to a class. The dataset and model should be compatible with this design for the function to work correctly.
-
 
 def plot_roc_curve(roc_curve_figure,
                    all_first_soft_scores,
@@ -174,6 +183,7 @@ def main():
 
     # load dataset
     test_dataset = load_dataset(dataset_name=args.dataset, dataset_part='test')
+    
     all_first_soft_scores, all_second_soft_scores, gt_labels = \
         get_soft_scores_and_true_labels(test_dataset, model)
 
@@ -196,7 +206,7 @@ def main():
     det_curve_figure.savefig(
         os.path.join(FIGURES_DIR,
                      f'{args.dataset}_{args.model}_det_curve.png'))
-
+    a = 1
 
 if __name__ == '__main__':
     main()

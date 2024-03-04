@@ -31,7 +31,6 @@ class FacesDataset(Dataset):
         """Get a sample and label from the dataset."""
         """INSERT YOUR CODE HERE, overrun return."""
         
-        
         image_path, label = self.images_with_labels[index]
         image = Image.open(image_path)
         
