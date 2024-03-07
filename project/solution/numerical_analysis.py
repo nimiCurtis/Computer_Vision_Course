@@ -24,6 +24,7 @@ def parse_args():
     Returns:
         Namespace with model name, checkpoint path and dataset name.
     """
+    
     parser = argparse.ArgumentParser(description='Analyze network performance.')
     parser.add_argument('--model', '-m',
                         default='SimpleNet', type=str,
@@ -63,12 +64,9 @@ def get_soft_scores_and_true_labels(dataset, model):
     all_second_soft_scores = []
     gt_labels = []
     data_loader = DataLoader(dataset,batch_size=16)
-    # device = 'cpu'
-    
+        
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(data_loader):
-            # Assuming the dataset returns a batch of data and labels
-            # Model's output is expected to be a tensor of shape [batch_size, num_classes]
 
             # set to gpu if available
             
@@ -93,9 +91,6 @@ def get_soft_scores_and_true_labels(dataset, model):
 
     return all_first_soft_scores.cpu().detach().numpy(), all_second_soft_scores.cpu().detach().numpy(), gt_labels.cpu().detach().numpy()
 
-# Note: This function is designed assuming that the dataset yields batches of data and labels, 
-# and that the model outputs a tensor where each row corresponds to a data point and each column 
-# to a class. The dataset and model should be compatible with this design for the function to work correctly.
 
 def plot_roc_curve(roc_curve_figure,
                    all_first_soft_scores,
@@ -183,16 +178,16 @@ def main():
 
     # load dataset
     test_dataset = load_dataset(dataset_name=args.dataset, dataset_part='test')
-    
+
     all_first_soft_scores, all_second_soft_scores, gt_labels = \
         get_soft_scores_and_true_labels(test_dataset, model)
 
     # plot the roc curves
     roc_curve_figure = plt.figure()
     roc_curve_figure = plot_roc_curve(roc_curve_figure,
-                                      all_first_soft_scores,
-                                      all_second_soft_scores,
-                                      gt_labels)
+                                    all_first_soft_scores,
+                                    all_second_soft_scores,
+                                    gt_labels)
     roc_curve_figure.savefig(
         os.path.join(FIGURES_DIR,
                      f'{args.dataset}_{args.model}_roc_curve.png'))
@@ -206,7 +201,6 @@ def main():
     det_curve_figure.savefig(
         os.path.join(FIGURES_DIR,
                      f'{args.dataset}_{args.model}_det_curve.png'))
-    a = 1
 
 if __name__ == '__main__':
     main()
