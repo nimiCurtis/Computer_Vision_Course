@@ -62,7 +62,7 @@ def compute_gradient_saliency_maps(samples: torch.tensor,
         shape Bx256x256 where B is the number of images in samples.
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    
+    pass
     # Ensure model is in evaluation mode to disable dropout, etc.
     model.eval()
 
