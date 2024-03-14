@@ -136,5 +136,51 @@
             0.5004533091568449,
             0.5004533091568449
         ]
+    },
+    {
+        "model": "XceptionBased",
+        "dataset": "synthetic_dataset",
+        "optimizer": {
+            "name": "Adam",
+            "params": {
+                "lr": 0.001,
+                "betas": [
+                    0.9,
+                    0.999
+                ],
+                "eps": 1e-08,
+                "weight_decay": 0,
+                "amsgrad": false,
+                "maximize": false,
+                "foreach": null,
+                "capturable": false,
+                "differentiable": false,
+                "fused": null
+            }
+        },
+        "train_loss": [
+            0.007212426967312714,
+            0.0020743024025232726
+        ],
+        "train_acc": [
+            0.89297056955325,
+            0.9741689604065212
+        ],
+        "val_loss": [
+            0.0014452878285372785,
+            0.0018268116525343334
+        ],
+        "val_acc": [
+            0.982066609735269,
+            0.9837745516652434
+        ],
+        "test_loss": [
+            0.001871197460369559,
+            0.0016141237018938942
+        ],
+        "test_acc": [
+            0.9809610154125114,
+            0.9791477787851315
+        ]
     }
 ]
