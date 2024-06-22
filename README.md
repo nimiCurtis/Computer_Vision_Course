@@ -11,11 +11,9 @@ This repository contains the coursework, assignments, and projects from the Comp
   - Implementation of homography and image stitching to create panoramas.
 
     Given: 
-
     ![](assignment1_Homography&Panorama/figures/Figure_1_withpoints.png)
 
     Display the panorama image using image stitching techniques: 
-
     ![](assignment1_Homography&Panorama/figures/Figure_6.png)
 
 - **Assignment 2: Introduction to CNNs**
@@ -34,7 +32,6 @@ This project aims to classify images as real or fake using deep learning models.
 - **Analysis**: Employs techniques like Saliency Maps and Grad-CAM to interpret model decisions.
 
 Example for mean saliency maps based on Xception net: 
-
 ![](Project_Real_Fake_Classifier/solution/figures/synthetic_dataset_XceptionBased_mean_saliency_maps.png)
 
 ### Key Results
