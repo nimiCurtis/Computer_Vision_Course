@@ -14,7 +14,7 @@ This repository contains the coursework, assignments, and projects from the Comp
 
     ![](assignment1_Homography&Panorama/figures/Figure_1_withpoints.png)
 
-    Present the panorma image using image stiching techniqes: 
+    Display the panorama image using image stitching techniques: 
 
     ![](assignment1_Homography&Panorama/figures/Figure_6.png)
 
